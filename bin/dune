@@ -1,0 +1,11 @@
+(executable
+ (public_name compiler)
+ (name main)
+ (modules main)
+ (libraries interpreter))
+
+(executable
+  (public_name repl)
+  (name repl)
+  (modules repl)
+  (libraries base stdio interpreter))

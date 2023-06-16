@@ -1,0 +1,4 @@
+(test
+ (name test)
+ (libraries base ounit2 interpreter)
+ (preprocess (pps ppx_deriving.show)))
