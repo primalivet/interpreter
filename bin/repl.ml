@@ -33,7 +33,7 @@ let rec loop () =
 
 let () =
   print_endline "";
-  print_endline "Welcome to the Monkey Programming language REPL!";
+  print_endline "Welcome to the REPL!";
   print_endline "Type \"quit\" to exit.";
   print_endline "---";
   loop ()
