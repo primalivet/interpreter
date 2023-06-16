@@ -19,7 +19,7 @@ and statement = LetBinding of { identifier : identifier; value : expression }
 and program = { statements : statement list }
 
 let node_program ss = Program { statements = ss }
-let node_identifier s = Identifier { name = s }
+let node_identifier s = { name = s }
 let node_letbinding i e = LetBinding { identifier = i; value = e }
 let node_operator t l r = Operator { left = l; operator = t; right = r }
 let node_integer i = Integer { number = i }
