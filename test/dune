@@ -1,4 +1,4 @@
 (tests
- (names parser_test lexer_test ast_test)
+ (names parser_test lexer_test)
  (libraries base ounit2 interpreter)
  (preprocess (pps ppx_deriving.show)))

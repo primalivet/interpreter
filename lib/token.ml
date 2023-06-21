@@ -33,7 +33,31 @@ type t =
   | Return
   | True
   | False
-  [@@deriving show]
+[@@deriving show, eq]
+
+(*
+  HINT: we only need to match the Token contructures that takes values,
+  deriving eq can do the rest
+*)
+let is_token t1 t2 =
+  match (t1, t2) with
+  | Ident _, Ident _ -> true
+  | Int _, Int _ -> true
+  | String _, String _ -> true
+  | _, _ -> equal t1 t2
+
+let is_operator = function
+  | Assign -> true
+  | Plus -> true
+  | Minus -> true
+  | Bang -> true
+  | Asterisk -> true
+  | Slash -> true
+  | Lt -> true
+  | Gt -> true
+  | Eq -> true
+  | NotEq -> true
+  | _ -> false
 
 let try_keyword = function
   | "let" -> Let

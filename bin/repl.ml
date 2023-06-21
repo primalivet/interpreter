@@ -16,15 +16,14 @@ let rec loop () =
       try
         s
         |> String.chop_prefix_if_exists ~prefix:"ast#"
-        |> Lexer.init |> Parser.init |> Parser.parse |> Ast.show
-        |> print_endline;
+        |> Parser.parse |> Ast.show |> print_endline;
         loop ()
       with e ->
         print_endline (Exn.to_string e);
         loop ())
   | Some s -> (
       try
-        Lexer.init s |> Parser.init |> Parser.parse |> Ast.show |> print_endline;
+        s |> Parser.parse |> Ast.show |> print_endline;
         loop ()
       with e ->
         print_endline (Exn.to_string e);
