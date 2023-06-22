@@ -63,23 +63,60 @@ let step_expect t p =
       (Printf.sprintf "Expected current token to be %s. But got: %s"
          (Token.show p.current) (Token.show t))
 
-let parse_identifier p =
+let rec prefix_fn t =
+  match t with
+  | Token.Ident _ -> Some parse_identifier
+  | Token.Int _ -> Some parse_integer
+  | Token.Bang -> Some parse_prefix
+  | Token.Minus -> Some parse_prefix
+  | _ -> None
+
+and infix_fn t =
+  match t with
+  | Token.Eq -> Some parse_infix
+  | Token.NotEq -> Some parse_infix
+  | Token.Plus -> Some parse_infix
+  | Token.Minus -> Some parse_infix
+  | Token.Slash -> Some parse_infix
+  | Token.Asterisk -> Some parse_infix
+  | _ -> None
+
+and parse_identifier p =
   match p.current with
   | Token.Ident s -> (Result.Ok (Ast.expr_node_identifier s), p)
   | _ -> (Result.Error "Expected identifier", p)
 
-let parse_integerliteral p =
+and parse_integer p =
   match p.current with
   | Token.Int i -> (Result.Ok (Ast.expr_node_integer i), p)
   | _ -> (Result.Error "Expected integer", p)
 
-let get_prefix_parser_fn t =
-  match t with
-  | Token.Ident _ -> Some parse_identifier
-  | Token.Int _ -> Some parse_integerliteral
-  | _ -> None
+and parse_prefix p =
+  let operator = p.current in
+  match operator with
+  | Token.Bang | Token.Minus -> (
+      step p |> parse_expression Prefix |> function
+      | Result.Ok e, p ->
+          ( Result.Ok (Ast.expr_node_prefix operator (precedence_num Prefix) e),
+            p )
+      | Result.Error r, p -> (Result.Error r, p))
+  | t ->
+      failwith
+      @@ Printf.sprintf "Unexpected prefix operator: %s"
+      @@ Token.show t
 
-let get_infix_parser_fn (_ : Token.t) : infix_parser_fn option = failwith "TODO"
+and parse_infix _ _ = failwith "TODO"
+
+and parse_expression (_ : precedence) p =
+  Option.Some p |> Option.apply @@ prefix_fn p.current |> function
+  | Some (Ok exp, p) -> (Result.Ok exp, p)
+  | Some (Error reason, p) -> (Result.Error reason, p)
+  | None ->
+      let msg =
+        Printf.sprintf "No matching prefix function for token: %s"
+          (Token.show p.current)
+      in
+      (Result.Error msg, p)
 
 let parse_letstatement p =
   step_expect Token.Let p
@@ -104,32 +141,6 @@ let parse_returnstatement p =
          Result.Ok (Ast.stmnt_node_return (Ast.expr_node_integer 10)))
   (* TODO: parse RHS expression *)
   |> fun statement -> (statement, step_until Token.Semicolon p)
-
-let parse_expression (precedence : precedence) p =
-  let rec inner (_ : precedence) p =
-    match p.current with
-    | Token.Ident s -> (Result.Ok (Ast.expr_node_identifier s), p)
-    | Token.Int i -> (Result.Ok (Ast.expr_node_integer i), p)
-    | Token.Bang -> (
-        inner Prefix (step p) |> function
-        | Result.Ok e, p ->
-            ( Result.Ok
-                (Ast.expr_node_prefix Token.Bang (precedence_num Prefix) e),
-              p )
-        | _ -> failwith "TODO")
-    | Token.Minus -> (
-        inner Prefix (step p) |> function
-        | Result.Ok e, p ->
-            ( Result.Ok
-                (Ast.expr_node_prefix Token.Minus (precedence_num Prefix) e),
-              p )
-        | _ -> failwith "TODO")
-    | _ ->
-        failwith
-          (Printf.sprintf "TODO: not yet implemented for token: %s"
-             (Token.show p.current))
-  in
-  inner precedence p
 
 let parse_expressionstatement p =
   parse_expression Lowest p |> fun (expression, p) ->
