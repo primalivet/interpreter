@@ -40,11 +40,12 @@ type t =
   deriving eq can do the rest
 *)
 let is_token t1 t2 =
-  match (t1, t2) with
+  match t1, t2 with
   | Ident _, Ident _ -> true
   | Int _, Int _ -> true
   | String _, String _ -> true
   | _, _ -> equal t1 t2
+;;
 
 let is_operator = function
   | Assign -> true
@@ -58,6 +59,7 @@ let is_operator = function
   | Eq -> true
   | NotEq -> true
   | _ -> false
+;;
 
 let try_keyword = function
   | "let" -> Let
@@ -68,3 +70,39 @@ let try_keyword = function
   | "true" -> True
   | "false" -> False
   | s -> Ident s
+;;
+
+let to_literal_str = function
+  | Illegal -> "ILLEGAL"
+  | Eof -> "EOF"
+  (* Identifiers and literals *)
+  | Ident s -> s
+  | Int i -> Int.to_string i
+  | String s -> Printf.sprintf "\"%s\"" s
+  (* Operators *)
+  | Assign -> "="
+  | Plus -> "+"
+  | Minus -> "-"
+  | Bang -> "!"
+  | Asterisk -> "*"
+  | Slash -> "/"
+  | Lt -> "<"
+  | Gt -> ">"
+  | Eq -> "=="
+  | NotEq -> "!="
+  (* Delimiters *)
+  | Comma -> ","
+  | Semicolon -> ";"
+  | Lparen -> "("
+  | Rparen -> ")"
+  | Lbrace -> "{"
+  | Rbrace -> "}"
+  (* Keywords *)
+  | Function -> "fn"
+  | Let -> "let"
+  | If -> "if"
+  | Else -> "else"
+  | Return -> "return"
+  | True -> "true"
+  | False -> "false"
+;;
