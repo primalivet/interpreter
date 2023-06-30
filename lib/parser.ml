@@ -9,8 +9,6 @@ type t =
 
 type statement_result = (Ast.statement, string) Result.t
 type expression_result = (Ast.expression, string) Result.t
-type infix_parser_fn = t -> expression_result * t
-type prefix_parser_fn = t -> expression_result * t
 
 let init s =
   let l = Lexer.init s in
@@ -121,32 +119,6 @@ and parse_expression precedence p =
     in
     inner lhs_exp p
   | Error reason, p -> Error reason, p
-
-and parse_expression2 (precedence : Precedence.t) p =
-  let prefix =
-    Some p
-    |> Option.apply @@ prefix_fn p.current
-    |> function
-    | Some (Ok exp, p) -> Ok exp, p
-    | Some (Error reason, p) -> Error reason, p
-    | None ->
-      let msg =
-        Printf.sprintf "No matching prefix function for: %s" (Token.show p.current)
-      in
-      Error msg, p
-  in
-  match prefix with
-  | Ok lhs_exp, p ->
-    let infix = infix_fn p.next in
-    if (not @@ Token.is_token Token.Semicolon p.next)
-       && Precedence.lt (Precedence.of_token p.next) precedence
-    then (
-      match infix with
-      | Some f -> f lhs_exp (step p)
-      | None -> Ok lhs_exp, p)
-    else Ok lhs_exp, p
-  | Error r, p -> Error r, p
-;;
 
 let parse_letstatement p =
   step_expect Token.Let p
