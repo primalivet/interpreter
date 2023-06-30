@@ -92,6 +92,8 @@ and parse_infix lhs_exp p =
   | Error reason, p -> Error reason, p
 
 and parse_expression precedence p =
+  let is_not_semi t = not @@ Token.is_token Token.Semicolon t in
+  let has_higher_precedence t = Precedence.gt precedence (Precedence.of_token t) in
   let prefix =
     prefix_fn p.current
     |> Option.map ~f:(fun f -> f p)
@@ -100,25 +102,21 @@ and parse_expression precedence p =
     | Some (Error reason, p) -> Error reason, p
     | None -> Error "No matching prefix", p
   in
+  let rec inner expr p =
+    if is_not_semi p.next && has_higher_precedence p.next
+    then (
+      match infix_fn p.next with
+      | Some f ->
+        (match f expr (step p) with
+         | Ok expr, p -> inner expr p
+         | Error r, p -> Error r, p)
+      | None -> Ok expr, p)
+    else Ok expr, p
+  in
   match prefix with
-  | Ok lhs_exp, p ->
-    let rec inner expr p =
-      match p with
-      | p
-        when (not @@ Token.is_token Token.Semicolon p.next)
-             && Precedence.lt (Precedence.of_token p.next) precedence ->
-        let infix = infix_fn p.next in
-        (match infix with
-         | Some f ->
-           f expr (step p)
-           |> (function
-           | Ok expr, p -> inner expr p
-           | Error r, p -> Error r, p)
-         | None -> Ok expr, p)
-      | p -> Ok expr, p
-    in
-    inner lhs_exp p
+  | Ok lhs_exp, p -> inner lhs_exp p
   | Error reason, p -> Error reason, p
+;;
 
 let parse_letstatement p =
   step_expect Token.Let p
