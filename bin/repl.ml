@@ -27,6 +27,18 @@ let rec loop () =
      | e ->
        print_endline (Exn.to_string e);
        loop ())
+  | Some s when String.is_prefix ~prefix:"string#" s ->
+    (try
+       s
+       |> String.chop_prefix_if_exists ~prefix:"string#"
+       |> Parser.parse
+       |> Ast.to_literal_str
+       |> print_endline;
+       loop ()
+     with
+     | e ->
+       print_endline (Exn.to_string e);
+       loop ())
   | Some s ->
     (try
        s |> Parser.parse |> Ast.show |> print_endline;
@@ -41,6 +53,9 @@ let rec loop () =
 let () =
   print_endline "";
   print_endline "Welcome to the REPL!";
+  print_endline "Use prefix 'ast#'    to show the actual abstract syntax tree";
+  print_endline "Use prefix 'tokens#' to show interpeted tokens";
+  print_endline "Use prefix 'string#' to show Ast as a string with added parentaces for precedence";
   print_endline "Type \"quit\" to exit.";
   print_endline "---";
   loop ()
