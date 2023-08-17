@@ -1,6 +1,5 @@
 open! Base
 (*
-  TODO: create mli file for type definitions
   NOTES
 
   Binding power
@@ -22,7 +21,6 @@ type t =
   ; current : Token.t
   ; next : Token.t
   }
-[@@deriving show]
 
 type statement_result = (Ast.statement, string) Result.t
 type expression_result = (Ast.expression, string) Result.t
@@ -128,7 +126,7 @@ and parse_expression precedence p =
     | None -> Error "No matching prefix", p
   in
   let rec inner expr p =
-    if is_not_semi p.next && has_higher_precedence p.next 
+    if is_not_semi p.next && has_higher_precedence p.next
     then (
       match infix_fn p.next with
       | Some f ->
