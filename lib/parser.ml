@@ -1,4 +1,21 @@
 open! Base
+(*
+  TODO: create mli file for type definitions
+  NOTES
+
+  Binding power
+
+  Given two tokens in the lexer, current and next, 
+  we read their precedence to find out binding-power. 
+  Which tells us how they should be placed in the AST
+
+  Example:                
+  Token        | T1 | T2 |
+  Precedence   | 2  | 1  | = T1 has higher right-binding-power than T2 has left-binding-power, T1 is deeper in the AST
+  Precedence   | 1  | 2  | = T2 has higher left-binding-power than T1 has right-binding-power, T2 is deeper in the AST
+
+ This check is done within parse_expressi on line 118 in this file.
+*)
 
 type t =
   { lexer : Lexer.t
@@ -44,6 +61,8 @@ let rec prefix_fn t =
   match t with
   | Token.Ident _ -> Some parse_identifier
   | Token.Int _ -> Some parse_integer
+  | Token.False -> Some parse_boolean
+  | Token.True -> Some parse_boolean
   | Token.Bang -> Some parse_prefix
   | Token.Minus -> Some parse_prefix
   | _ -> None
@@ -69,6 +88,12 @@ and parse_integer p =
   match p.current with
   | Token.Int i -> Result.Ok (Ast.expr_node_integer i), p
   | _ -> Error "Expected integer", p
+
+and parse_boolean p =
+  match p.current with
+  | Token.True -> Result.Ok (Ast.expr_node_boolean true), p
+  | Token.False -> Result.Ok (Ast.expr_node_boolean false), p
+  | _ -> Error "Expected boolean", p
 
 and parse_prefix p =
   let current_token = p.current in
@@ -103,7 +128,7 @@ and parse_expression precedence p =
     | None -> Error "No matching prefix", p
   in
   let rec inner expr p =
-    if is_not_semi p.next && has_higher_precedence p.next
+    if is_not_semi p.next && has_higher_precedence p.next 
     then (
       match infix_fn p.next with
       | Some f ->
@@ -123,6 +148,7 @@ let parse_letstatement p =
   |> Result.bind ~f:(fun p ->
        match p.current, p.next with
        | Token.Ident s, Token.Assign ->
+         (* TODO: parse RHS expression *)
          Ok (Ast.stmnt_node_let { name = s } (Ast.expr_node_integer 10))
        | c, n ->
          Error

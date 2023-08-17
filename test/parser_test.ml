@@ -35,20 +35,41 @@ let input = {|
 
 let tests =
   "parser tests"
-  >::: [ make_ast_test_str_list "parse expression statements" 
-         [ "((-a) * b)", "-a * b"
-         ; "(!(-a))", "!-a"
-         ; "((a + b) + c)", "a + b + c"
-         ; "((a + b) - c)", "a + b - c"
-         ; "((a * b) * c)", "a * b * c"
-         ; "((a * b) / c)", "a * b / c"
-         ; "(a + (b / c))", "a + b / c"
-         ; "(((a + (b * c)) + (d / e)) - f)", "a + b * c + d / e - f"
-         ; "(3 + 4)((-5) * 5)", "3 + 4; -5 * 5"
-         ; "((5 > 4) == (3 < 4))", "5 > 4 == 3 < 4"
-         ; "((5 < 4) != (3 > 4))", "5 < 4 != 3 > 4"
-         ; "((3 + (4 * 5)) == ((3 * 1) + (4 * 5)))", "3 + 4 * 5 == 3 * 1 + 4 * 5"
-         ]
+  >::: [ (* 
+           TODO: make test pass, see todos in lib/parser.ml
+           make_ast_test 
+                 "boolean" 
+                 (Ast.Program 
+                    { statements = 
+                        [ Ast.ExpressionStatement { value = Ast.Boolean { value = true } } 
+                        ; Ast.ExpressionStatement { value = Ast.Boolean { value = false } } 
+                        ; Ast.LetStatement 
+                            { identifier = { name = "t" } 
+                            ; value = Ast.Boolean { value = true } 
+                            } 
+                        ] 
+                    }) 
+                 ({| *) 
+            true 
+            false 
+            let t = true; 
+            |} |> Parser.parse) ; 
+         *)
+         make_ast_test_str_list
+           "parse expression statements"
+           [ "((-a) * b)", "-a * b"
+           ; "(!(-a))", "!-a"
+           ; "((a + b) + c)", "a + b + c"
+           ; "((a + b) - c)", "a + b - c"
+           ; "((a * b) * c)", "a * b * c"
+           ; "((a * b) / c)", "a * b / c"
+           ; "(a + (b / c))", "a + b / c"
+           ; "(((a + (b * c)) + (d / e)) - f)", "a + b * c + d / e - f"
+           ; "(3 + 4)((-5) * 5)", "3 + 4; -5 * 5"
+           ; "((5 > 4) == (3 < 4))", "5 > 4 == 3 < 4"
+           ; "((5 < 4) != (3 > 4))", "5 < 4 != 3 > 4"
+           ; "((3 + (4 * 5)) == ((3 * 1) + (4 * 5)))", "3 + 4 * 5 == 3 * 1 + 4 * 5"
+           ]
        ; make_ast_test_str "ast as string" "(2 + (5 * 3))" ("2 + 5 * 3;" |> Parser.parse)
        ; make_ast_test
            ""

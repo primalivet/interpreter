@@ -11,6 +11,7 @@ and identifier = { name : string }
 (* and operator = { left : int; operator : Token.t; right : expression } *)
 and integer = { number : int }
 
+and boolean = { value : bool }
 and prefix =
   { prefix : Token.t
   ; expression : expression
@@ -25,6 +26,7 @@ and infix =
 and expression =
   | Identifier of identifier
   | Integer of integer
+  | Boolean of boolean
   (* | Operator of operator *)
   | Prefix of prefix
   | Infix of infix
@@ -47,6 +49,7 @@ let expr_node_identifier s = Identifier { name = s }
 
 (* let expr_node_operator t l r = Operator { left = l; operator = t; right = r } *)
 let expr_node_integer i = Integer { number = i }
+let expr_node_boolean b = Boolean { value = b } 
 let expr_node_prefix t e = Prefix { prefix = t; expression = e }
 let expr_node_infix t lhs rhs = Infix { left = lhs; operator = t; right = rhs }
 
@@ -73,6 +76,7 @@ and to_literal_str_stmnt = function
 
 and to_literal_str_expr = function
   | Identifier { name } -> name
+  | Boolean { value } -> Bool.to_string value
   | Integer { number } -> Int.to_string number
   | Infix { left; operator; right } ->
     Printf.sprintf
