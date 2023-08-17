@@ -54,7 +54,8 @@ let tests =
            ({| true 
                false 
                let t = true;
-               let f = false; |} |> Parser.parse)
+               let f = false; |}
+            |> Parser.parse)
        ; make_ast_test_str_list
            "parse expression statements"
            [ "((-a) * b)", "-a * b"
