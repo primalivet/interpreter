@@ -56,6 +56,37 @@ let tests =
                let t = true;
                let f = false; |}
             |> Parser.parse)
+       ; make_ast_test
+           "boolean assertion syntax"
+           (Ast.Program
+              { statements =
+                  [ Ast.ExpressionStatement
+                      { value =
+                          Ast.Infix
+                            { left = Ast.Boolean { value = true }
+                            ; operator = Token.Eq
+                            ; right = Ast.Boolean { value = true }
+                            }
+                      }
+                  ; Ast.ExpressionStatement
+                      { value =
+                          Ast.Infix
+                            { left = Ast.Boolean { value = false }
+                            ; operator = Token.NotEq
+                            ; right = Ast.Boolean { value = false }
+                            }
+                      }
+                  ]
+              })
+           ({| true == true; 
+               false != false; |} |> Parser.parse)
+       ; make_ast_test_str_list
+           "parse boolean expression statements"
+           [ "true", "true"
+           ; "false", "false"
+           ; "((3 > 5) == false)", "3 > 5 == false"
+           ; "((3 < 5) == true)", "3 < 5 == true"
+           ]
        ; make_ast_test_str_list
            "parse expression statements"
            [ "((-a) * b)", "-a * b"
