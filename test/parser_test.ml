@@ -35,27 +35,27 @@ let input = {|
 
 let tests =
   "parser tests"
-  >::: [ (* 
-           TODO: make test pass, see todos in lib/parser.ml
-           make_ast_test 
-                 "boolean" 
-                 (Ast.Program 
-                    { statements = 
-                        [ Ast.ExpressionStatement { value = Ast.Boolean { value = true } } 
-                        ; Ast.ExpressionStatement { value = Ast.Boolean { value = false } } 
-                        ; Ast.LetStatement 
-                            { identifier = { name = "t" } 
-                            ; value = Ast.Boolean { value = true } 
-                            } 
-                        ] 
-                    }) 
-                 ({| *) 
-            true 
-            false 
-            let t = true; 
-            |} |> Parser.parse) ; 
-         *)
-         make_ast_test_str_list
+  >::: [ make_ast_test
+           "boolean"
+           (Ast.Program
+              { statements =
+                  [ Ast.ExpressionStatement { value = Ast.Boolean { value = true } }
+                  ; Ast.ExpressionStatement { value = Ast.Boolean { value = false } }
+                  ; Ast.LetStatement
+                      { identifier = { name = "t" }
+                      ; value = Ast.Boolean { value = true }
+                      }
+                  ; Ast.LetStatement
+                      { identifier = { name = "f" }
+                      ; value = Ast.Boolean { value = false }
+                      }
+                  ]
+              })
+           ({| true 
+               false 
+               let t = true;
+               let f = false; |} |> Parser.parse)
+       ; make_ast_test_str_list
            "parse expression statements"
            [ "((-a) * b)", "-a * b"
            ; "(!(-a))", "!-a"
@@ -218,7 +218,7 @@ let tests =
               { statements =
                   [ Ast.LetStatement
                       { identifier = { name = "five" }
-                      ; value = Ast.Integer { number = 10 }
+                      ; value = Ast.Integer { number = 5 }
                       }
                   ; Ast.LetStatement
                       { identifier = { name = "ten" }
@@ -226,7 +226,7 @@ let tests =
                       }
                   ; Ast.LetStatement
                       { identifier = { name = "hundred" }
-                      ; value = Ast.Integer { number = 10 }
+                      ; value = Ast.Integer { number = 100 }
                       }
                   ]
               })

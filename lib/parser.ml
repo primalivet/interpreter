@@ -123,7 +123,7 @@ and parse_expression precedence p =
     |> function
     | Some (Ok expr, p) -> Ok expr, p
     | Some (Error reason, p) -> Error reason, p
-    | None -> Error "No matching prefix", p
+    | None -> Error (Printf.sprintf "No matching prefix for %s" (Token.show p.current)), p
   in
   let rec inner expr p =
     if is_not_semi p.next && has_higher_precedence p.next
@@ -146,8 +146,12 @@ let parse_letstatement p =
   |> Result.bind ~f:(fun p ->
        match p.current, p.next with
        | Token.Ident s, Token.Assign ->
-         (* TODO: parse RHS expression *)
-         Ok (Ast.stmnt_node_let { name = s } (Ast.expr_node_integer 10))
+         (* HINT: step twice for both ident and assign tokens *)
+         let stepped = p |> step |> step in
+         let expr = parse_expression Lowest stepped in
+         (match expr with
+          | Ok expr, _ -> Ok (Ast.stmnt_node_let { name = s } expr)
+          | Error r, _ -> Error r)
        | c, n ->
          Error
            (Printf.sprintf
@@ -155,7 +159,6 @@ let parse_letstatement p =
                Expected identifier and equal sign after let keyword. Got: %s %s"
               (Token.show c)
               (Token.show n)))
-  (* TODO: parse RHS expression *)
   |> fun statement -> statement, step_until Token.Semicolon p
 ;;
 
